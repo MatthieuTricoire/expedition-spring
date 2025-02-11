@@ -1,11 +1,13 @@
 package org.wcs.myblog.dto;
 
+import java.util.List;
+
 public class AuthorDTO {
 
     private Long id;
     private String firstname;
     private String lastname;
-
+    private List<ArticleAuthorDTO> articleAuthorDTOs;
 
     public Long getId() {
         return id;
@@ -29,5 +31,13 @@ public class AuthorDTO {
 
     public void setLastname(String lastname) {
         this.lastname = lastname;
+    }
+
+    public List<ArticleAuthorDTO> getArticleAuthorDTOs() {
+        return articleAuthorDTOs;
+    }
+
+    public void setArticleAuthorDTOs(List<ArticleAuthorDTO> articleAuthorDTOs) {
+        this.articleAuthorDTOs = articleAuthorDTOs;
     }
 }

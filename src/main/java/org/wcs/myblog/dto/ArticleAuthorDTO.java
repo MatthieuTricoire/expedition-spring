@@ -2,21 +2,12 @@ package org.wcs.myblog.dto;
 
 public class ArticleAuthorDTO {
 
-    private Long id;
-
     private Long articleId;
 
     private Long authorId;
 
     private String contribution;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Long getArticleId() {
         return articleId;

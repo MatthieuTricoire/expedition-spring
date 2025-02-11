@@ -3,6 +3,7 @@ package org.wcs.myblog.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.wcs.myblog.dto.ArticleAuthorDTO;
 import org.wcs.myblog.dto.ArticleDTO;
 import org.wcs.myblog.dto.AuthorDTO;
 import org.wcs.myblog.model.*;
@@ -194,6 +195,8 @@ public class ArticleController {
             article.getImages().clear();
         }
 
+        // Mise à jour de la liste des auteurs
+
         if (articleDetails.getArticleAuthors() != null) {
             // Supprimer manuellement les anciens ArticleAuthor
             for (ArticleAuthor oldArticleAuthor : article.getArticleAuthors()) {
@@ -263,14 +266,14 @@ public class ArticleController {
         }
 
         if (article.getArticleAuthors() != null) {
-            articleDTO.setAuthorDTOs(article.getArticleAuthors().stream()
+            articleDTO.setArticleAuthorDTOS(article.getArticleAuthors().stream()
                     .filter(articleAuthor -> articleAuthor.getAuthor() != null)
                     .map(articleAuthor -> {
-                        AuthorDTO authorDTO = new AuthorDTO();
-                        authorDTO.setId(articleAuthor.getAuthor().getId());
-                        authorDTO.setFirstname(articleAuthor.getAuthor().getFirstname());
-                        authorDTO.setLastname(articleAuthor.getAuthor().getLastname());
-                        return authorDTO;
+                        ArticleAuthorDTO articleAuthorDTO = new ArticleAuthorDTO();
+                        articleAuthorDTO.setAuthorId(articleAuthor.getAuthor().getId());
+                        articleAuthorDTO.setArticleId(articleAuthor.getArticle().getId());
+                        articleAuthorDTO.setContribution(articleAuthor.getContribution());
+                        return articleAuthorDTO;
                     })
                     .collect(Collectors.toList()));
         }

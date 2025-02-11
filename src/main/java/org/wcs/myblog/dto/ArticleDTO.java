@@ -11,7 +11,7 @@ public class ArticleDTO {
     private String categoryName;
     private List<String> imageUrls;
 
-    private List<AuthorDTO> authorDTOs;
+    private List<ArticleAuthorDTO> articleAuthorDTOS;
 
 
     public Long getId() {
@@ -63,11 +63,11 @@ public class ArticleDTO {
         this.imageUrls = imageUrls;
     }
 
-    public List<AuthorDTO> getAuthorDTOs() {
-        return authorDTOs;
+    public List<ArticleAuthorDTO> getArticleAuthorDTOS() {
+        return articleAuthorDTOS;
     }
 
-    public void setAuthorDTOs(List<AuthorDTO> authorDTOs) {
-        this.authorDTOs = authorDTOs;
+    public void setArticleAuthorDTOS(List<ArticleAuthorDTO> articleAuthorDTOS) {
+        this.articleAuthorDTOS = articleAuthorDTOS;
     }
 }

@@ -2,6 +2,7 @@ package org.wcs.myblog.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.wcs.myblog.dto.ArticleAuthorDTO;
 import org.wcs.myblog.dto.AuthorDTO;
 import org.wcs.myblog.model.Author;
 import org.wcs.myblog.repository.AuthorRepository;
@@ -74,6 +75,16 @@ public class AuthorController {
         authorDTO.setId(author.getId());
         authorDTO.setFirstname(author.getFirstname());
         authorDTO.setLastname(author.getLastname());
+        authorDTO.setArticleAuthorDTOs(author.getArticleAuthors().stream()
+                .filter(articleAuthor -> articleAuthor.getArticle() != null)
+                .map(articleAuthor -> {
+                    ArticleAuthorDTO articleAuthorDTO = new ArticleAuthorDTO();
+                    articleAuthorDTO.setAuthorId(articleAuthor.getAuthor().getId());
+                    articleAuthorDTO.setArticleId(articleAuthor.getArticle().getId());
+                    articleAuthorDTO.setContribution(articleAuthor.getContribution());
+                    return articleAuthorDTO;
+                })
+                .collect(Collectors.toList()));
         return authorDTO;
     }
 }
