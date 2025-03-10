@@ -4,9 +4,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.wcs.myblog.dto.ArticleAuthorDTO;
+import org.wcs.myblog.dto.ArticleCreateDTO;
 import org.wcs.myblog.dto.ArticleDTO;
+import org.wcs.myblog.dto.ImageDTO;
 import org.wcs.myblog.exception.ResourceNotFoundException;
 import org.wcs.myblog.mapper.ArticleMapper;
+import org.wcs.myblog.mapper.ImageMapper;
 import org.wcs.myblog.model.*;
 import org.wcs.myblog.repository.*;
 
@@ -20,6 +24,7 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final ArticleMapper articleMapper;
+    private final ImageMapper imageMapper;
     private final CategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
     private final AuthorRepository authorRepository;
@@ -28,12 +33,14 @@ public class ArticleService {
     public ArticleService(
             ArticleRepository articleRepository,
             ArticleMapper articleMapper,
+            ImageMapper imageMapper,
             CategoryRepository categoryRepository,
             ImageRepository imageRepository,
             AuthorRepository authorRepository,
             ArticleAuthorRepository articleAuthorRepository) {
         this.articleRepository = articleRepository;
         this.articleMapper = articleMapper;
+        this.imageMapper = imageMapper;
         this.categoryRepository = categoryRepository;
         this.imageRepository = imageRepository;
         this.authorRepository = authorRepository;
@@ -71,52 +78,52 @@ public class ArticleService {
         return articleMapper.convertToDTO(article);
     }
 
-    public ArticleDTO createArticle(Article article) {
+    public ArticleDTO createArticle(ArticleCreateDTO articleCreateDTO) {
+        Article article = articleMapper.convertToEntity(articleCreateDTO);
         article.setCreatedAt(LocalDateTime.now());
         article.setUpdatedAt(LocalDateTime.now());
-
         // Gestion de la catégorie
-        if (article.getCategory() != null) {
-            Category category = categoryRepository.findById(article.getCategory().getId()).orElse(null);
-            if (category == null) {
-                return null;
-            }
+        if (articleCreateDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(articleCreateDTO.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("La catégorie avec l'id " + articleCreateDTO.getCategoryId() + " n'a pas été trouvée"));
             article.setCategory(category);
         }
 
         // Gestion des images
-        if (article.getImages() != null && !article.getImages().isEmpty()) {
-            List<Image> validImages = new ArrayList<>();
-            for (Image image : article.getImages()) {
-                if (image.getId() != null) {
-                    Image existingImage = imageRepository.findById(image.getId()).orElse(null);
-                    if (existingImage != null) {
-                        validImages.add(existingImage);
-                    } else {
-                        return null;
-                    }
+
+        List<Image> validImages = new ArrayList<>();
+        for (ImageDTO imageDTO : articleCreateDTO.getImages()) {
+            if (imageDTO.getId() != null) {
+                Image existingImage = imageRepository.findById(imageDTO.getId()).orElse(null);
+                if (existingImage != null) {
+                    validImages.add(existingImage);
                 } else {
-                    Image savedImage = imageRepository.save(image);
-                    validImages.add(savedImage);
+                    return null;
                 }
+            } else {
+                Image image = imageMapper.convertToEntity(imageDTO);
+                Image savedImage = imageRepository.save(image);
+                validImages.add(savedImage);
             }
-            article.setImages(validImages);
         }
+        article.setImages(validImages);
+
 
         Article savedArticle = articleRepository.save(article);
 
         // Gestion des auteurs
-        if (article.getArticleAuthors() != null) {
-            for (ArticleAuthor articleAuthor : article.getArticleAuthors()) {
-                Author author = articleAuthor.getAuthor();
-                author = authorRepository.findById(author.getId()).orElse(null);
+        if (articleCreateDTO.getAuthors() != null) {
+            for (ArticleAuthorDTO articleAuthorDTO : articleCreateDTO.getAuthors()) {
+                Long authorId = articleAuthorDTO.getAuthorId();
+                Author author = authorRepository.findById(authorId).orElse(null);
                 if (author == null) {
                     return null;
                 }
 
+                ArticleAuthor articleAuthor = new ArticleAuthor();
                 articleAuthor.setAuthor(author);
                 articleAuthor.setArticle(savedArticle);
-                articleAuthor.setContribution(articleAuthor.getContribution());
+                articleAuthor.setContribution(articleAuthorDTO.getContribution());
 
                 articleAuthorRepository.save(articleAuthor);
             }
