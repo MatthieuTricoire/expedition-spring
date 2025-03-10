@@ -73,9 +73,6 @@ public class ArticleController {
     @GetMapping("/{id}")
     public ResponseEntity<ArticleDTO> getArticleById(@PathVariable Long id) {
         ArticleDTO article = articleService.getArticleById(id);
-        if (article == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(article);
     }
 
