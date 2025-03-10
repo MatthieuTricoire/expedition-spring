@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.wcs.myblog.dto.ArticleDTO;
+import org.wcs.myblog.exception.ResourceNotFoundException;
 import org.wcs.myblog.mapper.ArticleMapper;
 import org.wcs.myblog.model.*;
 import org.wcs.myblog.repository.*;
@@ -65,10 +66,8 @@ public class ArticleService {
     }
 
     public ArticleDTO getArticleById(Long id) {
-        Article article = articleRepository.findById(id).orElse(null);
-        if (article == null) {
-            return null;
-        }
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("L'article avec l'id " + id + " n'a pas été trouvé"));
         return articleMapper.convertToDTO(article);
     }
 
