@@ -2,15 +2,29 @@ package org.wcs.myblog.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.wcs.myblog.service.CustomUserDetailService;
 
 @Configuration
 public class SecurityConfig {
+
+  private final JWTAuthenticationFilter jwtAuthenticationFilter;
+  private final CustomUserDetailService customUserDetailService;
+
+  public SecurityConfig(JWTAuthenticationFilter jwtAuthenticationFilter,
+      CustomUserDetailService customUserDetailService) {
+    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    this.customUserDetailService = customUserDetailService;
+  }
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
@@ -18,9 +32,17 @@ public class SecurityConfig {
             .requestMatchers("/auth/**").permitAll() // Permettre l'accès public aux endpoints sous /auth/
             .anyRequest().authenticated() // Tous les autres endpoints nécessitent une authentification
         )
+        .userDetailsService(customUserDetailService)
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     return http.build();
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+      throws Exception {
+    return authenticationConfiguration.getAuthenticationManager();
   }
 
   @Bean
